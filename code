@@ -113,3 +113,30 @@ for n in range(10000):
 res_name1 = [i[0] for i in res_name]  #
 res_name1
 print("商品图片：",res_img1,"店铺地址：",res_loc,"\n","店铺名称：",res_storename,"\n","商品名称：",res_name1,"\n","商品价格:",res_price,"\n","付款人数:",res_num)
+import csv
+
+def save_data_to_csv(data, filename):
+    # 定义表头字段
+    headers = ['商品图片', '店铺地址', '店铺名称', '商品名称', '商品价格', '付款人数']
+    
+    with open(filename, 'w', encoding='utf-8', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        # 写入表头
+        writer.writerow(headers)
+        # 写入数据行
+        for item in data:
+            writer.writerow(item)
+
+# 假设数据已经保存为以下变量：
+# res_img1：商品图片列表
+# res_loc：店铺地址列表
+# res_storename：店铺名称列表
+# res_name1：商品名称列表
+# res_price：商品价格列表
+# res_num：付款人数列表
+
+# 将数据组合成列表
+results = list(zip(res_img1, res_loc, res_storename, res_name1, res_price, res_num))
+
+# 调用保存数据的函数，并指定文件名
+save_data_to_csv(results, 'data.csv')
