@@ -1,0 +1,115 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun 28 08:23:52 2023
+
+@author: 43819
+"""
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup 
+import re
+import time
+driver = webdriver.Chrome()
+wait = WebDriverWait(driver,10)
+driver.get('https://www.tmall.com/')
+
+
+search_btnre = wait.until(EC.element_to_be_clickable((By.XPATH,'/html/body/div[3]/div[2]/div')))
+time.sleep(1)
+search_btnre.click()
+
+
+
+getname = '小米手机'#想要搜索的商品名称
+#等待搜索框加载完成
+search_btn = driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div[2]/input')
+#在搜索框内填写内容
+time.sleep(1)
+search_btn.send_keys('')
+#确认元素是否已经出现
+#input = wait.until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/div[3]/div[2]/input')))
+#等待确认按钮加载完成
+search_btnre = wait.until(EC.element_to_be_clickable((By.XPATH,'/html/body/div[1]/div[3]/div[2]/div')))
+time.sleep(1)
+search_btnre.click()
+#等待登录按钮加载完成
+tbao_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR,'#login-form > div.login-blocks.sns-login-links > a.alipay-login')))
+tbao_btn.click()#点击支付宝登录
+#等待手机扫码
+
+
+time.sleep(15)#等待账号登录进去
+#等待搜索框加载完成
+search_btn1 = driver.find_element(By.CSS_SELECTOR,'#q')
+#在搜索框内填写内容
+time.sleep(1)#等待一秒
+search_btn1.clear()#清除搜索框
+search_btn1.send_keys(getname)#选择搜索内容
+#确认元素是否已经出现
+#input = wait.until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/div[3]/div[2]/input')))
+#等待确认按钮加载完成
+search_btnre2 = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR,'#J_SearchForm > button')))
+time.sleep(1)
+search_btnre2.click()#按下搜索按钮
+
+
+#time.sleep(15)
+#print("登录后显示:"+driver.current_url)#用来验证此时是否进入页面
+html = driver.page_source
+soup = BeautifulSoup(html,'lxml')
+a = soup.select('.items')
+print(a)
+#使用正则表达式解析图片信息
+#商品图片
+ls1 = '<div class="pic">(.*?)</div>'
+pattern=re.compile(ls1,re.S) #re.S表示将.修改为任意匹配模式
+res_img=re.findall(pattern,str(a))
+print(res_img)
+ls11 = '[a-zA-Z]+://[^\s]*'
+pattern=re.compile(ls11,re.S) #re.S表示将.修改为任意匹配模式
+res_img1=re.findall(pattern,str(res_img))
+print(res_img1)
+#店铺地址
+ls2 = '<div class="location">(.*?)</div>'
+pattern=re.compile(ls2,re.S) #re.S表示将.修改为任意匹配模式
+res_loc=re.findall(pattern,str(a))
+#店铺名称
+ls3 = '<span>(.*?)</span>'
+pattern=re.compile(ls3,re.S) #re.S表示将.修改为任意匹配模式
+res_storename=re.findall(pattern,str(a))
+#商品名称  
+ls4 = '<span class="baoyou-intitle icon-service-free"></span>(.*?)<span class="H">(.*?)</span>(.*?)</a>'  
+#ls4 = '<a.*?>.*?<img id=".*?" class=".*?" src=".*?" data-src=".*?" alt="(.*?)">.*?</a> '
+#ls4 = '<span class="baoyou-intitle icon-service-free"></span>(.*?)</a>'
+pattern=re.compile(ls4,re.S) #re.S表示将.修改为任意匹配模式
+res_name=re.findall(pattern,str(a))
+#商品价格 
+ls5 = '<strong>(.*?)</strong>'
+pattern=re.compile(ls5,re.S) #re.S表示将.修改为任意匹配模式
+res_price=re.findall(pattern,str(a))
+#付款人数
+ls6 = '<div class="deal-cnt">(.*?)</div>'
+pattern=re.compile(ls6,re.S) #re.S表示将.修改为任意匹配模式
+res_num=re.findall(pattern,str(a))
+#店铺名称数据清洗
+wwzx = '旺旺在线'
+q = '¥'
+syy = '上一页'
+xyy = '下一页'
+for n in range(10000):
+    if wwzx in res_storename:
+        res_storename.remove(wwzx)
+    elif q in res_storename:
+        res_storename.remove(q)
+    elif syy in res_storename:
+        res_storename.remove(syy)
+    elif xyy in res_storename:
+        res_storename.remove(xyy)
+    else:
+        break
+#商品名称数据清洗
+res_name1 = [i[0] for i in res_name]  #
+res_name1
+print("商品图片：",res_img1,"店铺地址：",res_loc,"\n","店铺名称：",res_storename,"\n","商品名称：",res_name1,"\n","商品价格:",res_price,"\n","付款人数:",res_num)
